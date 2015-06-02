@@ -33,10 +33,6 @@ class Student(object):
             self.labs.append(0)
         while (len(self.individual) != 5):
             self.labs.append(0)
-#testsss
-
-
-
 
 
 
