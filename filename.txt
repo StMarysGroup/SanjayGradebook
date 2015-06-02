@@ -1,0 +1,7 @@
+Rahul, Murthy; 888884; Quizzes 98,76,45,23%,45%,68,84,99,0,100; IndividualProjects 98%,76%,45%,23%,45%; Labs 85,20,68,100,29,10,11,12,12,100; GroupProjects 50; Midterm 100; Final 100;
+Sanjay, Shrestha; 094734; Quizzes 80%,76%,45,23,45,68,84,99,0,100; IndividualProjects 98,76,45,23,45; Labs 85%,20,68,90,19%,50,12,12,100,100,2; GroupProjects 90; Midterm 74; Final 80;
+First, Last; 034944; Quizzes 0,6,5,3%,5,8,4,9,100,0; IndividualProjects 8,6,5,2,4; Labs 5,20,68,90,19,50,12,12,12,100,99; GroupProjects 9; Midterm 4%; Final 8;
+Maths, Calculus; 012345; Quizzes 80%,76%,45,63%,45,68,84,99,0,100; IndividualProjects 98,76,45,70%,45; Labs 85%,20,6%,90,19%,50,12,12,100,0,99; GroupProjects 90%; Midterm 7%; Final 80%;
+Sdjf, Ksdjf; 32; Quizzes 98,76,45,23,45,68,84,99,0,100; IndividualProjects 98,76,45,23,45; Labs 98,76,45,23,45,68,84,99,0,100; GroupProjects 4; Midterm 3; Final 2;
+Number, Selection; 234234; Quizzes 98,76,45,23,45,68,84,99,0,100; IndividualProjects 123,3,3,3,44; Labs 98,76,45,23,45,68,84,99,0,100; GroupProjects 0; Midterm 2; Final 1;
+Hello, World; 123; Quizzes 23,34,99,88,98,98,87,87,78,77; IndividualProjects 34,55,44,55; Labs 23,34,99,88,98,98,87,87,78,77; GroupProjects 100; Midterm 88; Final 99;
