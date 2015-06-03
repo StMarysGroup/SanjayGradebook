@@ -8,8 +8,14 @@ class Roster(object):
 	def getList(self):
 		return self.studentCollection
 
+
+	#remember to check against duplicate last names or otherwise deal with them	
+
 	# fix binary search, may need to add three lists or three dictionaries
-	
+	# or a dictionary with multiple keys
+	# http://stackoverflow.com/questions/11449232/multiple-keys-per-value
+
+
 
 
 class Student(object):
