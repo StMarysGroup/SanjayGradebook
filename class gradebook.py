@@ -1,5 +1,7 @@
 # 6/3: finished classes
 # 6/4: sql loading and unloading
+
+import sqlite3
 class Roster(object):
     def __init__(self):
         self.studentCollection = {}
@@ -9,7 +11,7 @@ class Roster(object):
         #self.studentCollection.append(student)
         self.studentCollection[student.first] = student
         self.studentCollection[student.last] = student
-        self.studentCollection[student.id] = student
+        self.studentCollection[str(student.id)] = student
 
     def searchRoster(self, key):
         return self.studentCollection[key]
@@ -22,59 +24,27 @@ class Roster(object):
 
     def addNewStudent(self):
         with open("filename.txt", "a") as f:   #opens file and appends at the end of the line
-
             stdict = {}    #creates  a dictionary
             stdict["First"] = input("First name: ").capitalize()
             stdict["Last"] = input("Last name: ").capitalize()
-
             stdict["id"] = input("Student ID: ")
-
-            
-
             # might not need eval
 
             stdict["Quizzes"] = list(eval(input("Enter quizzes and separate by comma ',' for multiple scores: ") + ","))
-
             stdict["Labs"] = list(eval(input("Enter labs score and separate by comma ',' for multiple scores:") + ","))
-
             stdict["IndividualProject"] = list(eval(input("Enter individual project scores and separate by comma ',' for multiple scores:") + ","))
-
             stdict["Midterm"] = eval(input("Enter midterm score:"))
             stdict["Final"] = eval(input("Enter final score: "))
             stdict["GroupProject"] = eval(input("Enter group project score : "))
-
-
             tempStudent = Student(stdict)
             self.addStudent(tempStudent)
-
             print(tempStudent)
-
-            '''studentinfo = stdict["First"]+", "+stdict["Last"]+"; "+stdict["id"]+"; "+"Quizzes "+ prepareListForPrinting(stdict, "Quizzes")+\
-            "; " +"IndividualProjects "+prepareListForPrinting(stdict, "IndividualProject")+"; " + "Labs " + prepareListForPrinting(stdict, "Labs")\
-            + "; " + "GroupProjects " +  str(stdict["GroupProject"])+ "; " + "Midterm " + str(stdict["Midterm"]) + \
-            "; " + "Final " + str(stdict["Final"]) + ";"
-            '''
 
             f.write(tempStudent.printForFileOutput())   #writes the student information in the file
             f.write('\n')  #give one line space
             f.close
 
-        '''
-        stdict = {}  #creates a dictionary
-        stdict["First"] = firstname
-        stdict["Last"] = lastname
-        stdict["id"] = ids
 
-
-        stdict["Quizzes"] = list(eval(quiz))   #lists and also evals the list of numbers
-        stdict["IndividualProject"] = list(eval(individualProjects))
-        stdict["Labs"] = list(eval(Labs))
-        stdict["GroupProject"] = int(groupProject)
-        stdict["Midterm"] = int(midterm)
-        stdict["Final"] = int(final)
-        database.append(stdict)
-        classRoster.addStudent(Student(stdict))
-        '''
 
 
 class Student(object):
@@ -100,7 +70,7 @@ class Student(object):
     def __repr__(self):
         listOfStudentStrings = []
         listOfStudentStrings.append("Name: " + self.last + ", " + self.first + "\n")
-        listOfStudentStrings.append("Student ID: " + self.id + "\n")
+        listOfStudentStrings.append("Student ID: " + str(self.id) + "\n")
         listOfStudentStrings.append("Final Grade: " + self.letterGrade)
 
         return "".join(listOfStudentStrings)
@@ -211,6 +181,147 @@ class Student(object):
 
 
 
+def writeTableHeaders():
+    # establish connection
+    con = sqlite3.connect('test.db')
+    #with the connection open
+    with con:
+        # get the cursor
+        cur = con.cursor()
+        #check to see if the tables exist
+        stmt = "PRAGMA table_info(StudentInfo)"
+        cur.execute(stmt)
+        result = cur.fetchone()
+        #if they do, do nothing
+        if result:
+            print("table exists")
+        #otherwise make em
+        else:
+            cur.execute('''create table StudentInfo(first Text, last Text, id integer, midterm integer, final integer, groupScore integer)''')
+
+
+        stmt = "PRAGMA table_info(Quizzes)"
+        cur.execute(stmt)
+        result = cur.fetchone()
+        if result:
+            print("table exists")
+        else:
+            cur.execute('''create table Quizzes(id integer, G1 integer, G2 integer, G3 integer, G4 integer,G5 integer, G6 integer,G7 integer, G8 integer,G9 integer, G10 integer)''')
+
+        stmt = "PRAGMA table_info(Labs)"
+        cur.execute(stmt)
+        result = cur.fetchone()
+        if result:
+            print("table exists")
+        else:
+            cur.execute('''create table Labs(id integer, G1 integer, G2 integer, G3 integer, G4 integer,G5 integer, G6 integer,G7 integer, G8 integer,G9 integer, G10 integer)''')
+
+        stmt = "PRAGMA table_info(IndividualProject)"
+        cur.execute(stmt)
+        result = cur.fetchone()
+        if result:
+            print("table exists")
+        else:
+            cur.execute('''create table IndividualProject(id integer, G1 integer, G2 integer, G3 integer, G4 integer,G5 integer)''')
+
+        con.commit()
+
+def WriteStudentToTable(student):
+
+    con = sqlite3.connect('test.db')
+
+    with con:
+
+        cur = con.cursor()
+
+        cur.execute('''Insert into StudentInfo(first, last, id, midterm, final, groupScore) Values(?,?,?,?,?,?)''', (student.first, student.last, student.id, student.midterm, student.final, student.group))
+        tempList = []
+        tempList.append(student.id)
+        for quiz in student.quiz:
+            tempList.append(quiz)
+
+        while (len(tempList) < 11):
+            tempList.append(0)
+
+        print (len(tempList))
+
+        cur.execute('''insert into Quizzes Values(?,?,?,?,?,?,?,?,?,?,?)''', (tempList[0], tempList[1], tempList[2], tempList[3], tempList[4], tempList[5], tempList[6], tempList[7], tempList[8], tempList[9], tempList[10]))
+
+        tempList = []
+        tempList.append(student.id)
+        for lab in student.labs:
+            tempList.append(lab)
+        while (len(tempList) < 11):
+            tempList.append(0)
+
+        cur.execute('''insert into Labs Values(?,?,?,?,?,?,?,?,?,?,?)''', (tempList[0], tempList[1], tempList[2], tempList[3], tempList[4], tempList[5], tempList[6], tempList[7], tempList[8], tempList[9], tempList[10]))
+
+        tempList = []
+        tempList.append(student.id)
+        for project in student.individual:
+            tempList.append(project)
+        while (len(tempList) < 6):
+            tempList.append(0)
+
+        cur.execute('''insert into IndividualProject Values(?,?,?,?,?,?)''', (tempList[0], tempList[1], tempList[2], tempList[3], tempList[4], tempList[5]))
+
+        con.commit()
+
+def ReadStudentFromTable():
+
+    classRoster = Roster()
+    con = sqlite3.connect('test.db')
+
+    with con:
+
+        cur = con.cursor()
+
+        # required for selecting multiple rows
+        cur.execute('SELECT * FROM StudentInfo')
+        rows = cur.fetchall()
+
+        for row in rows: #ORDER BY id
+
+            stdict = {}
+            stdict["First"] = row[0]
+            stdict["Last"] = row[1]
+            stdict["id"] = row[2]
+            stdict["Midterm"] = row[3]
+            stdict["Final"] = row[4]
+            stdict["GroupProject"] = row[5]
+
+            # returns only a single quiz row
+            for quiz in cur.execute('SELECT * FROM Quizzes where id = ?', (stdict["id"],)):
+                tempList = []
+                k = 1
+                while k < 11:
+                    tempList.append(quiz[k])
+                    k+=1
+
+            stdict["Quizzes"] = tempList
+
+            for lab in cur.execute('SELECT * FROM Labs where id = ?', (stdict["id"],)):
+                tempList = []
+                k = 1
+                while k < 11:
+                    tempList.append(lab[k])
+                    k+=1
+
+            stdict["Labs"] = tempList
+
+            for project in cur.execute('SELECT * FROM IndividualProject where id = ?', (stdict["id"],)):
+                tempList = []
+                k = 1
+                while k < 6:
+                    tempList.append(project[k])
+                    k+=1
+
+            stdict["IndividualProject"] = tempList
+
+            classRoster.addStudent(Student(stdict))
+
+    return classRoster
+
 def calcAverage(database, keyname): #Calculates Averages and takes a database(list) and a name of the key
     runningTotal = 0
     for student in database:      #checks each student in the database(list)
@@ -295,6 +406,7 @@ def studentDictionaryList(txtfile):
         #classStudent = Student()
         database.append(stdict)
         classRoster.addStudent(Student(stdict))
+        WriteStudentToTable(Student(stdict))
     return classRoster
 
 def calcQuizScore(stdict):  #takes the student dictionary as input
@@ -459,12 +571,18 @@ def printClassAverageClassRange(database):  #prints the class average and class 
 
 '''
 def main():
+    writeTableHeaders()
     #requestfile = input("Please input your file: ")
     openfile = open("filename.txt","r")  #opens a file to read
     readlines = openfile.readlines()   #reads each line of the textfile
 
     # database is a roster of students
-    database = studentDictionaryList(readlines)  #calls function to keep all the info in file to a list
+    #database = studentDictionaryList(readlines)  #calls function to keep all the info in file to a list
+
+
+
+    database = ReadStudentFromTable()
+
     menuPrint()    #calls the function to print the menu for the user
     userEntry = input("Please enter the number to make your selection: ")
     print("\n")
