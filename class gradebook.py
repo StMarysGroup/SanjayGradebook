@@ -1,10 +1,16 @@
 # 6/3: finished classes
 # 6/4: sql loading and unloading
 
+# for sql parent child tables
+# http://stackoverflow.com/questions/11285305/how-to-create-nested-tables-in-sqlite-database-android
+
 import sqlite3
+
+
 class Roster(object):
     def __init__(self):
         self.studentCollection = {}
+        self.studentList = []
         self.studentCount = 0 #or just ask the dictionary its size
 
     def addStudent(self, student):
@@ -12,14 +18,58 @@ class Roster(object):
         self.studentCollection[student.first] = student
         self.studentCollection[student.last] = student
         self.studentCollection[str(student.id)] = student
+        self.studentList.append(student)
 
     def searchRoster(self, key):
-        return self.studentCollection[key]
+        val = self.studentCollection.get(key, None)
+        if val:
+            return val
+        else:
+            print("search with " + key + " was not able to find a student!")
 
 
     #remember to check against duplicate last names or otherwise deal with them
 
+    '''def addNewStudent():
+        with open("filename.txt", "a") as f:   #opens file and appends at the end of the line
+            f.write('\n')  #give one line space
+            stdict = {}    #creates  a dictionary
+            stdict["First"] = input("First name: ").capitalize()
+            stdict["Last"] = input("Last name: ").capitalize()
 
+            stdict["id"] = input("Student ID: ")
+            stdict["Quizzes"] = eval(input("Enter quizzes and separate by comma ',' for multiple scores:"))
+            stdict["QuizScore"] = calcQuizScore(stdict)
+            stdict["Labs"] = eval(input("Enter labs score and separate by comma ',' for multiple scores:"))
+            stdict["LabsScore"] = calcLabsScore(stdict)
+            stdict["IndividualProject"] = eval(input("Enter individual project scores and separate by comma ',' for multiple scores:"))
+            stdict["IndividualProjectScore"] = calcIndividualProjectScore(stdict)
+            stdict["Midterm"] = eval(input("Enter midterm score:"))
+            stdict["Final"] = eval(input("Enter final score: "))
+            stdict["GroupProject"] = eval(input("Enter group project score : "))
+            stdict["Overallscore"] = calcOverallScore(stdict)
+            stdict["Letter Grade"] = lettergrade((stdict["Overallscore"]))
+            studentinfo = stdict["First"]+", "+stdict["Last"]+"; "+stdict["id"]+"; "+"Quizzes "+ prepareListForPrinting(stdict, "Quizzes")+\
+            "; " +"IndividualProjects "+prepareListForPrinting(stdict, "IndividualProject")+"; " + "Labs " + prepareListForPrinting(stdict, "Labs")\
+            + "; " + "GroupProjects " +  str(stdict["GroupProject"])+ "; " + "Midterm " + str(stdict["Midterm"]) + \
+            "; " + "Final " + str(stdict["Final"]) + ";"
+            f.write(studentinfo)   #writes the student information in the file
+            f.close
+    '''
+    def writeToFile(self):
+        print("out here")
+        with open("filenametest.txt", "w") as f:
+            print ("here")
+            for student in self.studentList:
+                studentinfo = student.first + ", " + student.last + "; " + student.id+ "; " + "Quizzes " + student.prepareListForPrinting("quiz")+\
+                "; " +"IndividualProjects "+prepareListForPrinting("individual")+"; " + "Labs " + prepareListForPrinting("labs")\
+                + "; " + "GroupProjects " +  str(student.group)+ "; " + "Midterm " + str(student.midterm) + \
+                "; " + "Final " + str(student.final) + ";"
+
+    def sortRoster(self):
+        self.studentList = sorted(self.studentList, key= lambda student:student.last)
+        for student in self.studentList:
+            print(student.last)
 
 
     def addNewStudent(self):
@@ -45,7 +95,59 @@ class Roster(object):
             f.close
 
 
+            WriteStudentToTable(tempStudent)
 
+    def deleteStudent(self, lastname):
+        student = self.searchRoster(lastname)
+        con = sqlite3.connect('test.db')
+        with con:
+            cur = con.cursor()
+            cur.execute('''SELECT * FROM StudentInfo WHERE last= ?''', (student.last,))
+            row = cur.fetchone()
+            if row:
+                # need to delete child tables also!
+                # 1. fetch the id that we us
+                # 2. delete the row in all four tables
+                tempStudentID = row[2]
+                cur.execute('''DELETE FROM StudentInfo WHERE id= ?''', (tempStudentID,))
+                cur.execute('''DELETE FROM Quizzes WHERE id= ?''', (tempStudentID,))
+                cur.execute('''DELETE FROM Labs WHERE id= ?''', (tempStudentID,))
+                cur.execute('''DELETE FROM IndividualProject WHERE id= ?''', (tempStudentID,))
+            else:
+                print("student with last name " + lastname + " not found!")
+
+    def calcClassAverage(self):
+        classTotal = 0
+        for student in self.studentList:
+            classTotal += student.overallScore
+
+        return classTotal/len(self.studentCollection)
+
+    def editStudent(self, lastname):
+        student = self.searchRoster(lastname)
+        con = sqlite3.connect('test.db')
+        with con:
+            cur = con.cursor()
+            cur.execute('''SELECT * FROM StudentInfo WHERE last= ?''', (student.last,))
+            row = cur.fetchone()
+            if row:
+                # updates
+                temp = ""
+                temp = input ("Enter " + row[0] + "'s new first name, blank to keep it the same").capitalize()
+                if temp:
+                    cur.execute('''UPDATE StudentInfo SET first= ? WHERE first= ?''', (temp, student.first))
+                    student.first = temp
+                temp = ""
+                temp = input ("Enter " + row[1] + "'s new last name, blank to keep it the same").capitalize()
+                if temp:
+                    cur.execute('''UPDATE StudentInfo SET last= ? WHERE last= ?''', (temp, student.last))
+                    student.last = temp
+                temp = ""
+                temp = input ("Enter " + str(row[2]) + "'s new id, blank to keep it the same")
+
+                if temp:
+                    cur.execute('''UPDATE StudentInfo SET id= ? WHERE id= ?''', (temp, student.id))
+                    student.id = temp
 
 class Student(object):
     def __init__(self, info):
@@ -64,6 +166,7 @@ class Student(object):
         self.individualProjectScore = self.calculateFinalizedGradePointsForIndividualProjects(self.individual)
         self.overallScore = self.calcOverallScore()
         self.letterGrade = self.lettergrade(self.overallScore)
+
 
 
 
@@ -233,39 +336,42 @@ def WriteStudentToTable(student):
     with con:
 
         cur = con.cursor()
+        cur.execute('''SELECT * from StudentInfo where last= ?''', (student.last,))
+        if cur.fetchone():
+            print("student with the same last name already seen! skipping!")
+        else:
+            cur.execute('''Insert into StudentInfo(first, last, id, midterm, final, groupScore) Values(?,?,?,?,?,?)''', (student.first, student.last, student.id, student.midterm, student.final, student.group))
+            tempList = []
+            tempList.append(student.id)
+            for quiz in student.quiz:
+                tempList.append(quiz)
 
-        cur.execute('''Insert into StudentInfo(first, last, id, midterm, final, groupScore) Values(?,?,?,?,?,?)''', (student.first, student.last, student.id, student.midterm, student.final, student.group))
-        tempList = []
-        tempList.append(student.id)
-        for quiz in student.quiz:
-            tempList.append(quiz)
+            while (len(tempList) < 11):
+                tempList.append(0)
 
-        while (len(tempList) < 11):
-            tempList.append(0)
+            print (len(tempList))
 
-        print (len(tempList))
+            cur.execute('''insert into Quizzes Values(?,?,?,?,?,?,?,?,?,?,?)''', (tempList[0], tempList[1], tempList[2], tempList[3], tempList[4], tempList[5], tempList[6], tempList[7], tempList[8], tempList[9], tempList[10]))
 
-        cur.execute('''insert into Quizzes Values(?,?,?,?,?,?,?,?,?,?,?)''', (tempList[0], tempList[1], tempList[2], tempList[3], tempList[4], tempList[5], tempList[6], tempList[7], tempList[8], tempList[9], tempList[10]))
+            tempList = []
+            tempList.append(student.id)
+            for lab in student.labs:
+                tempList.append(lab)
+            while (len(tempList) < 11):
+                tempList.append(0)
 
-        tempList = []
-        tempList.append(student.id)
-        for lab in student.labs:
-            tempList.append(lab)
-        while (len(tempList) < 11):
-            tempList.append(0)
+            cur.execute('''insert into Labs Values(?,?,?,?,?,?,?,?,?,?,?)''', (tempList[0], tempList[1], tempList[2], tempList[3], tempList[4], tempList[5], tempList[6], tempList[7], tempList[8], tempList[9], tempList[10]))
 
-        cur.execute('''insert into Labs Values(?,?,?,?,?,?,?,?,?,?,?)''', (tempList[0], tempList[1], tempList[2], tempList[3], tempList[4], tempList[5], tempList[6], tempList[7], tempList[8], tempList[9], tempList[10]))
+            tempList = []
+            tempList.append(student.id)
+            for project in student.individual:
+                tempList.append(project)
+            while (len(tempList) < 6):
+                tempList.append(0)
 
-        tempList = []
-        tempList.append(student.id)
-        for project in student.individual:
-            tempList.append(project)
-        while (len(tempList) < 6):
-            tempList.append(0)
+            cur.execute('''insert into IndividualProject Values(?,?,?,?,?,?)''', (tempList[0], tempList[1], tempList[2], tempList[3], tempList[4], tempList[5]))
 
-        cur.execute('''insert into IndividualProject Values(?,?,?,?,?,?)''', (tempList[0], tempList[1], tempList[2], tempList[3], tempList[4], tempList[5]))
-
-        con.commit()
+            con.commit()
 
 def ReadStudentFromTable():
 
@@ -436,102 +542,9 @@ def calcOverallScore(stdict):  #takes student dictionary as input and calculates
 
     return overallGrade/10 #output the overall score
 
-#####Project # 4
-
-def bin_search(my_list, search,searchoption): #takes list, string and name of the key as input
-    middle = len(my_list)//2 #returns a index
-    if len(my_list) == 0:
-        return None
-    elif my_list[middle].getSearchByType(searchoption) == search: #checks if the middle of the list has the search
-        return my_list[middle]
-    elif my_list[middle].getSearchByType(searchoption) > search:
-        answer = bin_search(my_list[middle+1:], search, searchoption) #calls the function again
-        return answer
-    elif my_list[middle].getSearchByType(searchoption) < search:
-        answer = bin_search(my_list[0:middle], search, searchoption) #calls the function again
-        return answer
 
 
-def merge(sorted1,sorted2):  # merges two unsorted list
-    merged = []   #creates an empty list
-    while (len(sorted1) > 0) and (len(sorted2) > 0):  #this loops run if the length of the list is more than zero
-        if sorted1[0]["Last"] < sorted2[0]["Last"]:
-            merged.append(sorted1[0])   # adds into the new list
-            sorted1.remove(sorted1[0])  # removes from the list
 
-        elif sorted1[0]["Last"] > sorted2[0]["Last"]:
-            merged.append(sorted2[0])
-            sorted2.remove(sorted2[0])
-        else:
-            merged.append(sorted1[0])
-            #merged.append(sorted2[0])
-            sorted1.remove(sorted1[0])
-            sorted2.remove(sorted2[0])
-    if len(sorted1) > 0:
-        return merged + sorted1
-    else:
-        return merged + sorted2
-
-def merge_sort(my_list):
-    if len(my_list) == 1:
-        return my_list
-    else:
-        middle = len(my_list)//2
-        short1 = my_list[:middle]  #splits the list
-        short2 = my_list[middle:]
-        sorted1 = merge_sort(short1)  #calls the function again
-        sorted2 = merge_sort(short2)
-        print("test")
-        return merge(sorted1, sorted2)
-
-    #####
-
-# description: This function searches for the specified student by exaustively walking through the database of all students and looking for the search term
-# param (searchDict): The database dictionary to be searched
-# param (search): The string to search for
-# param (searchOption): This specifies if we are searching for a first name or an ID number
-# return: the found entry if it exists or None if it does not
-def searchFunction(searchlist, search, searchOption):
-    if searchOption == 1:       #if search by last name
-        for student in searchlist: #checks each item in the list
-             if student["Last"] == search:     #checks if the key is equal to the searchvalue
-                    return student         #returns the dictionary
-    elif searchOption == 2:
-        for student in searchlist:
-             if student["First"] == search:
-                    return student
-    elif searchOption == 3:
-        for student in searchlist:
-            if student["id"] == search:
-                return student
-    return None  #returns None is student is not found
-
-def sort_list(list_users):  #sorts dictionaries by student's last name
-    sort = 'Last'  #assigns a variable to a key
-    sorted_users = [(stdict[sort], stdict) for stdict in list_users]
-    sorted_users.sort()    #sorts
-    new_list = [stdict for (key, stdict) in sorted_users]
-    return new_list
-
-def classRange(database, key): #finds the max and min of the list and takes the list and key as input
-    scoreList = []  #creates an empty list
-    for student in database: #checks each dictionary in the list
-         scoreList.append(student[key])  #adds the values from the key to the new list
-    return "Highest Score : " + str(max(scoreList)) + "   Lowest Score : " + str(min(scoreList)) #returns the max and min
-
-def classRange2(database, key): #finds the max and min of the list and takes the list and key as input
-    scoreList = []  #creates an empty list
-    for student in database:  #checks each dictionary in the list
-         scoreList.extend(student[key]) #adds the items in the list inside the key to the new list
-    return "Highest Score : " + str(max(scoreList)) + "   Lowest Score : " + str(min(scoreList))  #returns the max and min
-
-
-def findIndex(lst, key, value): #finds index of the student to delete
-    #inputs is a list, key,
-    for i, dic in enumerate(lst):   #hecks each index and dictionary in the list
-        if dic[key] == value:
-            return i   #returns a index
-    return None   #if not found returns None
 
 def menuPrint(): #this function prints the menu of the program
     print("\n") #gives one empty space
@@ -577,7 +590,7 @@ def main():
     readlines = openfile.readlines()   #reads each line of the textfile
 
     # database is a roster of students
-    #database = studentDictionaryList(readlines)  #calls function to keep all the info in file to a list
+    database = studentDictionaryList(readlines)  #calls function to keep all the info in file to a list
 
 
 
@@ -586,7 +599,7 @@ def main():
     menuPrint()    #calls the function to print the menu for the user
     userEntry = input("Please enter the number to make your selection: ")
     print("\n")
-    while userEntry != "0":   # the loop will continue to run until the user inputs 0
+    while userEntry != "exit":   # the loop will continue to run until the user inputs 0
 
         if userEntry == "1":
             search = input("Enter last name:").capitalize()    #prompts user to input lastname and inputs in lowercase
@@ -599,8 +612,6 @@ def main():
                 print (searchResult)
                 #printing(searchResult)#searches the input in the dictionary
                      #uses the printing function to print the student directory if found
-            else:
-                print("Student with Last name", search, " is not on file!!!!")     #if not found
 
         elif userEntry == "2":
             search = input("Enter firstname: ").capitalize()
@@ -610,8 +621,7 @@ def main():
                 #printing(searchResult)
                 print (searchResult)
                 print("student found!")
-            else:
-                print("Student with First name ", search.capitalize(), "is not on file!!")
+
         elif userEntry == "3":
             search = input("Enter the student ID: ")
             searchResult = database.searchRoster(search)
@@ -619,17 +629,16 @@ def main():
                 print("student found!")
                 print (searchResult)
                 #printing(searchResult)
-            else:
-                print("Student with Student ID ", search.capitalize(), "is not on file!!")
+
         elif userEntry == "4":      # calculates averages uses class average function and letter grade function.
             #printClassAverageClassRange(database)
-            print ("sdfsf")
+            print ("averages")
+            print(database.calcClassAverage())
+
         elif userEntry == "5":
 
-            sorting = merge_sort(database)
-
-            print(sorting)
-
+            print("sorting")
+            database.sortRoster()
         elif userEntry == "6":
             print ("sdfsdf")
             database.addNewStudent()
@@ -637,15 +646,15 @@ def main():
         elif userEntry == "7":
 
             enterLast = input("Enter last name of the student you want to delete: ").capitalize()
-            indexlast = findIndex(database, "Last" , enterLast)
-
-            if indexlast != None or "0":
-                database.pop(indexlast)   # deletes the given index in the list
-
+            database.deleteStudent(enterLast)
+        elif userEntry == "8":
+            print("thing")
+            enterLast = input("Update student: What is the last name of the student that you want to change? ").capitalize()
+            database.editStudent(enterLast)
         elif userEntry == "0" :
+            database.writeToFile()
             print("Good Bye. Have a wonderful day")
-                       # Exits if the users enters 0
-
+            userEntry = "exit"
         else:
             print("INVALID SELECTION!!! Selection only from 0 thru 7")   #prints if user inputs anything, not on the selection
 
