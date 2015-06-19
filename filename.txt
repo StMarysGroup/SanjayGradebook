@@ -7,3 +7,5 @@ Number, Selection; 234234; Quizzes 98,76,45,23,45,68,84,99,0,100; IndividualProj
 Hello, World; 123; Quizzes 23,34,99,88,98,98,87,87,78,77; IndividualProjects 34,55,44,55; Labs 23,34,99,88,98,98,87,87,78,77; GroupProjects 100; Midterm 88; Final 99;
 Sdf, Sdf; 555; Quizzes 5,0,0,0,0,0,0,0,0,0; IndividualProjects 5,0,0,0,0; Labs 5,0,0,0,0,0,0,0,0,0; GroupProjects 0; Midterm 5; Final 5
 Wr3wef, Sdfsdf; 4444; Quizzes 5,0,0,0,0,0,0,0,0,0; IndividualProjects 5,0,0,0,0; Labs 5,0,0,0,0,0,0,0,0,0; GroupProjects 5; Midterm 5; Final 5
+John, Guru; 090; Quizzes 12,12,0,0,0,0,0,0,0,0; IndividualProjects 3,5,0,0,0; Labs 23,3,0,0,0,0,0,0,0,0; GroupProjects 90; Midterm 5; Final 4
+Jonnyy, Kokk; 23; Quizzes 2,0,0,0,0,0,0,0,0,0; IndividualProjects 4,0,0,0,0; Labs 3,0,0,0,0,0,0,0,0,0; GroupProjects 2; Midterm 2; Final 3

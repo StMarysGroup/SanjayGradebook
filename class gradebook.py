@@ -4,6 +4,21 @@
 # for sql parent child tables
 # http://stackoverflow.com/questions/11285305/how-to-create-nested-tables-in-sqlite-database-android
 
+
+
+
+
+'''
+plan:
+
+1. allow duplicate names, but not ids
+2. class averages
+3. ui
+
+
+
+'''
+
 import sqlite3
 
 
@@ -61,10 +76,12 @@ class Roster(object):
         with open("filenametest.txt", "w") as f:
             print ("here")
             for student in self.studentList:
-                studentinfo = student.first + ", " + student.last + "; " + student.id+ "; " + "Quizzes " + student.prepareListForPrinting("quiz")+\
-                "; " +"IndividualProjects "+prepareListForPrinting("individual")+"; " + "Labs " + prepareListForPrinting("labs")\
+                studentinfo = student.first + ", " + student.last + "; " + str(student.id) + "; " + "Quizzes " + student.prepareListForPrinting("quiz")+\
+                "; " +"IndividualProjects "+ student.prepareListForPrinting("individual")+"; " + "Labs " + student.prepareListForPrinting("labs")\
                 + "; " + "GroupProjects " +  str(student.group)+ "; " + "Midterm " + str(student.midterm) + \
-                "; " + "Final " + str(student.final) + ";"
+                "; " + "Final " + str(student.final) + ";" + "\n"
+                f.write(studentinfo)
+                f.close
 
     def sortRoster(self):
         self.studentList = sorted(self.studentList, key= lambda student:student.last)
@@ -596,11 +613,12 @@ def main():
 
     database = ReadStudentFromTable()
 
-    menuPrint()    #calls the function to print the menu for the user
-    userEntry = input("Please enter the number to make your selection: ")
+
+    userEntry = ""
     print("\n")
     while userEntry != "exit":   # the loop will continue to run until the user inputs 0
-
+        menuPrint()
+        userEntry = input("Please enter the number to make your selection: ")
         if userEntry == "1":
             search = input("Enter last name:").capitalize()    #prompts user to input lastname and inputs in lowercase
             #print (search)
@@ -658,8 +676,8 @@ def main():
         else:
             print("INVALID SELECTION!!! Selection only from 0 thru 7")   #prints if user inputs anything, not on the selection
 
-        menuPrint()
-        userEntry = input("Please enter the number to make your selection: ")
+
+
         print("\n")
     openfile.close    #closes the open file!
 main()
